@@ -7,13 +7,10 @@
     <title>Laporan Tahunan - Flipbook Viewer</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
     <script src="https://unpkg.com/page-flip/dist/js/page-flip.browser.js"></script>
 
     <script>
-        // Set Worker PDF.js
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
 
@@ -23,107 +20,55 @@
             background-image: radial-gradient(#333 1px, transparent 1px);
             background-size: 20px 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw;
         }
 
-        /* Header controls - Dipertinggi sedikit untuk mengakomodasi 2 baris di mobile jika perlu */
         .header-controls {
-            height: 60px; 
-            z-index: 50;
-            position: relative;
-            background-color: rgba(17, 24, 39, 0.95);
-            border-bottom: 1px solid #374151;
+            height: 60px; z-index: 50; position: relative;
+            background-color: rgba(17, 24, 39, 0.95); border-bottom: 1px solid #374151;
         }
 
-        /* Container buku */
         .book-wrapper {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 60px); /* Sesuaikan dengan tinggi header */
-            width: 100%;
-            overflow: hidden;
-            padding: 20px;
+            display: flex; justify-content: center; align-items: center;
+            height: calc(100vh - 60px); width: 100%; overflow: hidden; padding: 20px;
         }
 
-        #flipbook {
-            height: 100%;
-        }
-
-        .page-content {
-            background-color: white;
-            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .stf__block {
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5) !important;
-        }
+        #flipbook { height: 100%; }
+        .page-content { background-color: white; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1); }
+        .stf__block { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5) !important; }
 
         .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
+            border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6;
+            border-radius: 50%; width: 40px; height: 40px;
+            animation: spin 1s linear infinite; margin: 0 auto;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Style untuk tombol dokumen aktif/inaktif */
-        .doc-btn {
-            transition: all 0.3s ease;
-            font-weight: 600;
-            border: 1px solid transparent;
-        }
-        .doc-btn.active {
-            background-color: #3b82f6; /* Blue-500 */
-            color: white;
-            border-color: #60a5fa;
-        }
-        .doc-btn.inactive {
-            background-color: #374151; /* Gray-700 */
-            color: #9ca3af; /* Gray-400 */
-            border-color: #4b5563;
-        }
-        .doc-btn.inactive:hover {
-            background-color: #4b5563;
-            color: white;
-        }
+        .doc-btn { transition: all 0.3s ease; font-weight: 600; border: 1px solid transparent; }
+        .doc-btn.active { background-color: #3b82f6; color: white; border-color: #60a5fa; }
+        .doc-btn.inactive { background-color: #374151; color: #9ca3af; border-color: #4b5563; }
+        .doc-btn.inactive:hover { background-color: #4b5563; color: white; }
     </style>
 </head>
 
 <body class="text-white">
 
     <div class="w-full px-4 shadow-lg flex justify-between items-center header-controls">
-        
         <div class="flex flex-col justify-center">
             <h1 class="text-lg font-bold text-white tracking-wide">Annual Report</h1>
             <span class="text-xs text-blue-400" id="current-doc-label">Agenda Strategis</span>
         </div>
 
-        <div class="text-center text-sm text-gray-400 absolute left-1/2 transform -translate-x-1/2 hidden lg:block"
-            id="page-info">
+        <div class="text-center text-sm text-gray-400 absolute left-1/2 transform -translate-x-1/2 hidden lg:block" id="page-info">
             Menyiapkan sistem...
         </div>
 
         <div class="flex items-center space-x-4">
-            
             <div class="flex bg-gray-800 rounded-lg p-1 space-x-1">
-                <button onclick="switchDocument('agenda')" id="btn-agenda" 
-                    class="doc-btn active px-3 py-1 rounded text-xs sm:text-sm">
+                <button onclick="switchDocument('agenda')" id="btn-agenda" class="doc-btn active px-3 py-1 rounded text-xs sm:text-sm">
                     Agenda Strategis
                 </button>
-                <button onclick="switchDocument('laporan')" id="btn-laporan" 
-                    class="doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm">
+                <button onclick="switchDocument('laporan')" id="btn-laporan" class="doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm">
                     Laporan Eksekutif
                 </button>
             </div>
@@ -131,21 +76,13 @@
             <div class="h-6 w-px bg-gray-600 hidden sm:block"></div>
 
             <div class="flex space-x-1">
-                <button id="prev-btn" title="Sebelumnya"
-                    class="bg-gray-700 hover:bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm transition-colors">
-                    &larr;
-                </button>
-                <button id="next-btn" title="Selanjutnya"
-                    class="bg-gray-700 hover:bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm transition-colors">
-                    &rarr;
-                </button>
+                <button id="prev-btn" title="Sebelumnya" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm">&larr;</button>
+                <button id="next-btn" title="Selanjutnya" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm">&rarr;</button>
             </div>
         </div>
     </div>
 
-    <div id="loader-container"
-        class="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-90 z-40"
-        style="top: 60px;">
+    <div id="loader-container" class="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-90 z-40" style="top: 60px;">
         <div class="loader block mb-4"></div>
         <p class="text-white font-medium" id="loading-text">Menghubungkan ke file PDF...</p>
     </div>
@@ -156,27 +93,21 @@
 
     <script>
         // ==========================================
-        // KONFIGURASI DOKUMEN
+        // KONFIGURASI 
         // ==========================================
         const DOCUMENTS = {
-            'agenda': {
-                url: 'agenda_strategis.pdf', // Nama file 1
-                name: 'Agenda Strategis'
-            },
-            'laporan': {
-                url: 'laporan_eksekutif.pdf', // Nama file 2
-                name: 'Laporan Eksekutif'
-            }
+            'agenda': { url: 'agenda_strategis.pdf', name: 'Agenda Strategis' },
+            'laporan': { url: 'laporan_eksekutif.pdf', name: 'Laporan Eksekutif' }
         };
 
         const TARGET_WIDTH = 800; 
         const TARGET_HEIGHT = 1132; 
 
-        // Variabel Global
+        // State Global
         let pageFlip = null;
         let pdfDoc = null;
         let renderedPages = new Set();
-        let currentDocKey = 'agenda'; // Default document
+        let currentDocKey = 'agenda';
 
         // Elemen DOM
         const flipbookEl = document.getElementById('flipbook');
@@ -184,64 +115,58 @@
         const loadingText = document.getElementById('loading-text');
         const pageInfo = document.getElementById('page-info');
         const currentDocLabel = document.getElementById('current-doc-label');
-
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
 
-        // Jalankan saat load
         window.addEventListener('DOMContentLoaded', () => {
-            switchDocument('agenda'); // Load default
+            switchDocument('agenda');
         });
 
         // ==========================================
-        // LOGIKA SWITCH DOKUMEN (FITUR BARU)
+        // LOGIKA SWITCH DOKUMEN
         // ==========================================
-        
         async function switchDocument(key) {
             currentDocKey = key;
             const docConfig = DOCUMENTS[key];
 
-            // 1. Update Tampilan Tombol
+            // Update UI Tombol
             document.getElementById('btn-agenda').className = key === 'agenda' ? 'doc-btn active px-3 py-1 rounded text-xs sm:text-sm' : 'doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm';
             document.getElementById('btn-laporan').className = key === 'laporan' ? 'doc-btn active px-3 py-1 rounded text-xs sm:text-sm' : 'doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm';
-            
-            // 2. Update Label Header
             currentDocLabel.innerText = docConfig.name;
 
-            // 3. Reset Flipbook Lama
+            // Bersihkan Flipbook Lama
             if (pageFlip) {
-                pageFlip.destroy(); // Hancurkan instance lama
+                pageFlip.destroy();
                 pageFlip = null;
             }
             
-            // Bersihkan container HTML dan Cache
             flipbookEl.innerHTML = '';
             renderedPages.clear(); 
             pdfDoc = null;
 
-            // 4. Tampilkan Loader
-            loaderContainer.classList.remove('hidden');
-            flipbookEl.classList.add('hidden');
+            // Reset Loader
+            if(loaderContainer) loaderContainer.classList.remove('hidden');
+            if(flipbookEl) flipbookEl.classList.add('hidden');
 
-            // 5. Load PDF Baru
-            await loadPDF(docConfig.url);
+            // Tambahkan Timestamp agar browser tidak pakai cache lama (Anti-Cache)
+            const urlWithTimestamp = `${docConfig.url}?t=${new Date().getTime()}`;
+            
+            await loadPDF(urlWithTimestamp, docConfig.url);
         }
 
         // ==========================================
-        // LOGIKA CORE (PDF & FLIPBOOK)
+        // LOAD PDF & RENDER
         // ==========================================
-
-        async function loadPDF(url) {
+        async function loadPDF(fetchUrl, displayUrl) {
             try {
-                loadingText.innerText = `Mengunduh ${url}...`;
+                if(loadingText) loadingText.innerText = `Mengunduh file...`;
                 
-                const loadingTask = pdfjsLib.getDocument(url);
+                const loadingTask = pdfjsLib.getDocument(fetchUrl);
                 pdfDoc = await loadingTask.promise;
 
                 const totalPages = pdfDoc.numPages;
-                loadingText.innerText = `Menyiapkan ${totalPages} halaman...`;
+                if(loadingText) loadingText.innerText = `Menyiapkan ${totalPages} halaman...`;
 
-                // Buat Canvas Placeholder
                 for (let i = 1; i <= totalPages; i++) {
                     const canvas = document.createElement('canvas');
                     canvas.className = 'page-content';
@@ -262,24 +187,24 @@
 
                 initFlipbook();
 
-                loaderContainer.classList.add('hidden');
-                flipbookEl.classList.remove('hidden');
+                if(loaderContainer) loaderContainer.classList.add('hidden');
+                if(flipbookEl) flipbookEl.classList.remove('hidden');
 
-                // Render halaman awal saja
                 renderVisiblePages(0);
 
             } catch (error) {
                 console.error("Gagal Load PDF:", error);
-                showError(error.message, url);
+                showError(error.message, displayUrl);
             }
         }
 
+        // Render Halaman Cerdas (Hanya yang terlihat)
         async function renderVisiblePages(flipbookIndex) {
             const currentPdfPage = flipbookIndex + 1;
             const range = [currentPdfPage, currentPdfPage + 1, currentPdfPage + 2, currentPdfPage - 1, currentPdfPage - 2];
 
             for (let pageNum of range) {
-                if (pageNum >= 1 && pdfDoc && pageNum <= pdfDoc.numPages) {
+                if (pdfDoc && pageNum >= 1 && pageNum <= pdfDoc.numPages) {
                     renderPageToCanvas(pageNum);
                 }
             }
@@ -300,9 +225,8 @@
 
                 const context = canvas.getContext('2d');
                 await page.render({ canvasContext: context, viewport: viewport }).promise;
-
             } catch (e) {
-                // Jangan log error jika terjadi saat switching dokumen (karena canvas didestroy)
+                // Ignore error jika canvas sudah hilang (user pindah dokumen)
                 if(document.getElementById(`page-${pageNumber}`)) {
                     console.error(`Error render page ${pageNumber}`, e);
                 }
@@ -315,10 +239,7 @@
                 width: TARGET_WIDTH,
                 height: TARGET_HEIGHT,
                 size: "stretch",
-                minWidth: 300,
-                maxWidth: 1000,
-                minHeight: 400,
-                maxHeight: 1400,
+                minWidth: 300, maxWidth: 1000, minHeight: 400, maxHeight: 1400,
                 showCover: true,
                 mobileScrollSupport: true,
                 maxShadowOpacity: 0.5
@@ -331,45 +252,47 @@
                 updateUI(currentIndex);
                 renderVisiblePages(currentIndex);
             });
-
             updateUI(0);
         }
 
         function updateUI(currentIndex) {
             if(!pageFlip) return;
             const totalFlipPages = pageFlip.getPageCount();
-            pageInfo.innerText = `Halaman ${currentIndex + 1} dari ${totalFlipPages}`;
+            if(pageInfo) pageInfo.innerText = `Halaman ${currentIndex + 1} dari ${totalFlipPages}`;
             
-            // Update tombol nav
-            prevBtn.disabled = currentIndex === 0;
-            nextBtn.disabled = currentIndex === totalFlipPages - 1;
-            
-            // Style tombol disabled
-            prevBtn.style.opacity = currentIndex === 0 ? "0.5" : "1";
-            nextBtn.style.opacity = currentIndex === totalFlipPages - 1 ? "0.5" : "1";
+            if(prevBtn) {
+                prevBtn.disabled = currentIndex === 0;
+                prevBtn.style.opacity = currentIndex === 0 ? "0.5" : "1";
+            }
+            if(nextBtn) {
+                nextBtn.disabled = currentIndex === totalFlipPages - 1;
+                nextBtn.style.opacity = currentIndex === totalFlipPages - 1 ? "0.5" : "1";
+            }
         }
 
         function showError(msg, filename) {
-            loaderContainer.innerHTML = `
-                <div class="text-red-500 text-center p-6 bg-gray-900 rounded-lg border border-red-800 shadow-xl max-w-md">
-                    <h2 class="text-xl font-bold mb-3">File Tidak Ditemukan</h2>
-                    <p class="text-gray-300 mb-2 text-sm">Gagal memuat: <b>${filename}</b></p>
-                    <p class="text-xs text-gray-500 mb-4">${msg}</p>
-                    <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">
-                        Refresh Halaman
-                    </button>
-                </div>
-            `;
+            if(loaderContainer) {
+                loaderContainer.innerHTML = `
+                    <div class="text-red-500 text-center p-6 bg-gray-900 rounded-lg border border-red-800 shadow-xl max-w-md">
+                        <h2 class="text-xl font-bold mb-3">File Tidak Ditemukan</h2>
+                        <p class="text-gray-300 mb-2 text-sm">Gagal memuat: <b>${filename}</b></p>
+                        <p class="text-xs text-gray-500 mb-4">${msg}</p>
+                        <div class="bg-gray-800 p-2 rounded text-left text-xs text-gray-400 mb-4">
+                            <strong>Cek Settings GitHub:</strong><br>
+                            Pastikan kolom "Custom domain" di Settings > Pages KOSONG.
+                        </div>
+                        <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">
+                            Coba Lagi
+                        </button>
+                    </div>
+                `;
+            }
         }
 
-        // Event Listener Navigasi
-        prevBtn.addEventListener('click', () => pageFlip && pageFlip.flipPrev());
-        nextBtn.addEventListener('click', () => pageFlip && pageFlip.flipNext());
-        
-        window.addEventListener('resize', () => {
-            if (pageFlip) pageFlip.update();
-        });
-
+        // Event Listener
+        if(prevBtn) prevBtn.addEventListener('click', () => pageFlip && pageFlip.flipPrev());
+        if(nextBtn) nextBtn.addEventListener('click', () => pageFlip && pageFlip.flipNext());
+        window.addEventListener('resize', () => { if (pageFlip) pageFlip.update(); });
     </script>
 </body>
 </html>
