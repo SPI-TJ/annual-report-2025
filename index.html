@@ -30,9 +30,9 @@
             width: 100vw;
         }
 
-        /* Header controls */
+        /* Header controls - Dipertinggi sedikit untuk mengakomodasi 2 baris di mobile jika perlu */
         .header-controls {
-            height: 50px;
+            height: 60px; 
             z-index: 50;
             position: relative;
             background-color: rgba(17, 24, 39, 0.95);
@@ -44,7 +44,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: calc(100vh - 50px);
+            height: calc(100vh - 60px); /* Sesuaikan dengan tinggi header */
             width: 100%;
             overflow: hidden;
             padding: 20px;
@@ -59,15 +59,13 @@
             box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Bayangan halaman saat menekuk */
         .stf__block {
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5) !important;
         }
 
-        /* Loading Spinner Style */
         .loader {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6; /* Blue-500 */
+            border-top: 4px solid #3b82f6;
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -79,50 +77,77 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Style untuk tombol dokumen aktif/inaktif */
+        .doc-btn {
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+        .doc-btn.active {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            border-color: #60a5fa;
+        }
+        .doc-btn.inactive {
+            background-color: #374151; /* Gray-700 */
+            color: #9ca3af; /* Gray-400 */
+            border-color: #4b5563;
+        }
+        .doc-btn.inactive:hover {
+            background-color: #4b5563;
+            color: white;
+        }
     </style>
 </head>
 
 <body class="text-white">
 
     <div class="w-full px-4 shadow-lg flex justify-between items-center header-controls">
-        <div class="flex items-center space-x-4">
-            <h1 class="text-lg font-bold text-blue-400 truncate hidden sm:block">Annual Report Viewer</h1>
+        
+        <div class="flex flex-col justify-center">
+            <h1 class="text-lg font-bold text-white tracking-wide">Annual Report</h1>
+            <span class="text-xs text-blue-400" id="current-doc-label">Agenda Strategis</span>
         </div>
 
-        <div class="text-center text-sm text-gray-400 absolute left-1/2 transform -translate-x-1/2 hidden md:block"
+        <div class="text-center text-sm text-gray-400 absolute left-1/2 transform -translate-x-1/2 hidden lg:block"
             id="page-info">
             Menyiapkan sistem...
         </div>
 
-        <div class="flex space-x-1 sm:space-x-2">
-            <button id="first-btn" title="Ke Awal"
-                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                &laquo; Awal
-            </button>
+        <div class="flex items-center space-x-4">
+            
+            <div class="flex bg-gray-800 rounded-lg p-1 space-x-1">
+                <button onclick="switchDocument('agenda')" id="btn-agenda" 
+                    class="doc-btn active px-3 py-1 rounded text-xs sm:text-sm">
+                    Agenda Strategis
+                </button>
+                <button onclick="switchDocument('laporan')" id="btn-laporan" 
+                    class="doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm">
+                    Laporan Eksekutif
+                </button>
+            </div>
 
-            <button id="prev-btn" title="Sebelumnya"
-                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                &larr; Prev
-            </button>
+            <div class="h-6 w-px bg-gray-600 hidden sm:block"></div>
 
-            <button id="next-btn" title="Selanjutnya"
-                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                Next &rarr;
-            </button>
-
-            <button id="last-btn" title="Ke Akhir"
-                class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
-                Akhir &raquo;
-            </button>
+            <div class="flex space-x-1">
+                <button id="prev-btn" title="Sebelumnya"
+                    class="bg-gray-700 hover:bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm transition-colors">
+                    &larr;
+                </button>
+                <button id="next-btn" title="Selanjutnya"
+                    class="bg-gray-700 hover:bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm transition-colors">
+                    &rarr;
+                </button>
+            </div>
         </div>
     </div>
 
     <div id="loader-container"
         class="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-90 z-40"
-        style="top: 50px;">
+        style="top: 60px;">
         <div class="loader block mb-4"></div>
         <p class="text-white font-medium" id="loading-text">Menghubungkan ke file PDF...</p>
-        <p class="text-xs text-gray-500 mt-2">(Pastikan file 'merged_output.pdf' tersedia)</p>
     </div>
 
     <div class="book-wrapper">
@@ -131,143 +156,157 @@
 
     <script>
         // ==========================================
-        // KONFIGURASI 
+        // KONFIGURASI DOKUMEN
         // ==========================================
-        const PDF_FILENAME = 'merged_output.pdf'; 
-        
-        // Optimasi: Gunakan resolusi layar (800px lebar sudah cukup tajam untuk web)
-        // Jangan gunakan 1240px (A4 Print) karena berat.
+        const DOCUMENTS = {
+            'agenda': {
+                url: 'agenda_strategis.pdf', // Nama file 1
+                name: 'Agenda Strategis'
+            },
+            'laporan': {
+                url: 'laporan_eksekutif.pdf', // Nama file 2
+                name: 'Laporan Eksekutif'
+            }
+        };
+
         const TARGET_WIDTH = 800; 
-        const TARGET_HEIGHT = 1132; // Rasio A4 (1 : 1.414)
+        const TARGET_HEIGHT = 1132; 
 
         // Variabel Global
         let pageFlip = null;
         let pdfDoc = null;
-        let renderedPages = new Set(); // Menyimpan halaman yang sudah dirender (Cache)
+        let renderedPages = new Set();
+        let currentDocKey = 'agenda'; // Default document
 
         // Elemen DOM
         const flipbookEl = document.getElementById('flipbook');
         const loaderContainer = document.getElementById('loader-container');
         const loadingText = document.getElementById('loading-text');
         const pageInfo = document.getElementById('page-info');
+        const currentDocLabel = document.getElementById('current-doc-label');
 
         const prevBtn = document.getElementById('prev-btn');
         const nextBtn = document.getElementById('next-btn');
-        const firstBtn = document.getElementById('first-btn');
-        const lastBtn = document.getElementById('last-btn');
 
         // Jalankan saat load
         window.addEventListener('DOMContentLoaded', () => {
-            loadPDF(PDF_FILENAME);
+            switchDocument('agenda'); // Load default
         });
 
         // ==========================================
-        // LOGIKA UTAMA (LAZY LOADING)
+        // LOGIKA SWITCH DOKUMEN (FITUR BARU)
+        // ==========================================
+        
+        async function switchDocument(key) {
+            currentDocKey = key;
+            const docConfig = DOCUMENTS[key];
+
+            // 1. Update Tampilan Tombol
+            document.getElementById('btn-agenda').className = key === 'agenda' ? 'doc-btn active px-3 py-1 rounded text-xs sm:text-sm' : 'doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm';
+            document.getElementById('btn-laporan').className = key === 'laporan' ? 'doc-btn active px-3 py-1 rounded text-xs sm:text-sm' : 'doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm';
+            
+            // 2. Update Label Header
+            currentDocLabel.innerText = docConfig.name;
+
+            // 3. Reset Flipbook Lama
+            if (pageFlip) {
+                pageFlip.destroy(); // Hancurkan instance lama
+                pageFlip = null;
+            }
+            
+            // Bersihkan container HTML dan Cache
+            flipbookEl.innerHTML = '';
+            renderedPages.clear(); 
+            pdfDoc = null;
+
+            // 4. Tampilkan Loader
+            loaderContainer.classList.remove('hidden');
+            flipbookEl.classList.add('hidden');
+
+            // 5. Load PDF Baru
+            await loadPDF(docConfig.url);
+        }
+
+        // ==========================================
+        // LOGIKA CORE (PDF & FLIPBOOK)
         // ==========================================
 
         async function loadPDF(url) {
             try {
                 loadingText.innerText = `Mengunduh ${url}...`;
                 
-                // Load Dokumen PDF
                 const loadingTask = pdfjsLib.getDocument(url);
                 pdfDoc = await loadingTask.promise;
 
                 const totalPages = pdfDoc.numPages;
                 loadingText.innerText = `Menyiapkan ${totalPages} halaman...`;
 
-                // 1. Buat elemen KOSONG (Canvas Placeholder) untuk semua halaman
-                // Ini membuat struktur buku terbentuk instan tanpa menunggu render gambar
+                // Buat Canvas Placeholder
                 for (let i = 1; i <= totalPages; i++) {
                     const canvas = document.createElement('canvas');
                     canvas.className = 'page-content';
-                    canvas.id = `page-${i}`; // ID Unik untuk target render nanti
+                    canvas.id = `page-${i}`;
                     canvas.width = TARGET_WIDTH;
                     canvas.height = TARGET_HEIGHT;
                     
-                    // Isi placeholder putih dan teks loading
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = "#ffffff";
                     ctx.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
                     ctx.font = "16px sans-serif";
                     ctx.fillStyle = "#cccccc";
                     ctx.textAlign = "center";
-                    ctx.fillText("Memuat Halaman " + i + "...", TARGET_WIDTH/2, TARGET_HEIGHT/2);
+                    ctx.fillText("Halaman " + i, TARGET_WIDTH/2, TARGET_HEIGHT/2);
 
                     flipbookEl.appendChild(canvas);
                 }
 
-                // 2. Inisialisasi Flipbook (StPageFlip)
                 initFlipbook();
 
-                // 3. Sembunyikan Loading Screen utama
                 loaderContainer.classList.add('hidden');
                 flipbookEl.classList.remove('hidden');
 
-                // 4. Mulai Render Halaman Awal (Halaman 1, 2, 3)
-                // Kita tidak menunggu semua selesai, tapi render yang terlihat saja
+                // Render halaman awal saja
                 renderVisiblePages(0);
 
             } catch (error) {
                 console.error("Gagal Load PDF:", error);
-                showError(error.message);
+                showError(error.message, url);
             }
         }
 
-        // Fungsi Render Cerdas: Hanya render halaman yang dilihat user +/- tetangganya
         async function renderVisiblePages(flipbookIndex) {
-            // Flipbook index dimulai dari 0.
-            // Karena kita memasukkan halaman PDF secara urut, Index 0 = PDF Page 1.
-            
             const currentPdfPage = flipbookIndex + 1;
-
-            // Tentukan range halaman yang mau dirender (misal: halaman aktif, dan 2 halaman sebelum/sesudahnya)
-            // Ini agar saat user membalik halaman, gambarnya sudah siap.
-            const range = [
-                currentPdfPage, 
-                currentPdfPage + 1, 
-                currentPdfPage + 2, 
-                currentPdfPage - 1, 
-                currentPdfPage - 2
-            ];
+            const range = [currentPdfPage, currentPdfPage + 1, currentPdfPage + 2, currentPdfPage - 1, currentPdfPage - 2];
 
             for (let pageNum of range) {
-                // Pastikan halaman valid (1 sampai total halaman)
-                if (pageNum >= 1 && pageNum <= pdfDoc.numPages) {
+                if (pageNum >= 1 && pdfDoc && pageNum <= pdfDoc.numPages) {
                     renderPageToCanvas(pageNum);
                 }
             }
         }
 
         async function renderPageToCanvas(pageNumber) {
-            // CEK CACHE: Jika halaman ini sudah pernah dirender, jangan render ulang (Hemat Memori)
             if (renderedPages.has(pageNumber)) return;
-            
-            // Tandai sedang diproses agar tidak request double
             renderedPages.add(pageNumber);
 
             try {
                 const page = await pdfDoc.getPage(pageNumber);
                 const canvas = document.getElementById(`page-${pageNumber}`);
-                
                 if (!canvas) return;
 
-                // Hitung skala agar pas dengan ukuran target
                 const viewportUnscaled = page.getViewport({ scale: 1.0 });
                 const scale = TARGET_WIDTH / viewportUnscaled.width;
                 const viewport = page.getViewport({ scale: scale });
 
                 const context = canvas.getContext('2d');
-                
-                // Render PDF ke Canvas
-                await page.render({
-                    canvasContext: context,
-                    viewport: viewport
-                }).promise;
+                await page.render({ canvasContext: context, viewport: viewport }).promise;
 
             } catch (e) {
-                console.error(`Error render page ${pageNumber}`, e);
-                renderedPages.delete(pageNumber); // Hapus dari cache jika gagal, biar dicoba lagi nanti
+                // Jangan log error jika terjadi saat switching dokumen (karena canvas didestroy)
+                if(document.getElementById(`page-${pageNumber}`)) {
+                    console.error(`Error render page ${pageNumber}`, e);
+                }
+                renderedPages.delete(pageNumber);
             }
         }
 
@@ -280,69 +319,53 @@
                 maxWidth: 1000,
                 minHeight: 400,
                 maxHeight: 1400,
-                showCover: true, // Halaman pertama jadi cover hardback
+                showCover: true,
                 mobileScrollSupport: true,
                 maxShadowOpacity: 0.5
             });
 
-            // Load elemen yang sudah kita buat tadi ke library flipbook
             pageFlip.loadFromHTML(document.querySelectorAll('.page-content'));
 
-            // EVENT: Saat halaman dibalik
             pageFlip.on('flip', (e) => {
-                const currentIndex = e.data; // Index halaman baru
+                const currentIndex = e.data;
                 updateUI(currentIndex);
-                
-                // PENTING: Trigger render untuk halaman yang baru dibuka
                 renderVisiblePages(currentIndex);
             });
 
-            // Update UI pertama kali
             updateUI(0);
         }
 
         function updateUI(currentIndex) {
+            if(!pageFlip) return;
             const totalFlipPages = pageFlip.getPageCount();
-            
-            // +1 karena index mulai dari 0
             pageInfo.innerText = `Halaman ${currentIndex + 1} dari ${totalFlipPages}`;
-
-            // Disable tombol jika di ujung
-            firstBtn.disabled = currentIndex === 0;
+            
+            // Update tombol nav
             prevBtn.disabled = currentIndex === 0;
             nextBtn.disabled = currentIndex === totalFlipPages - 1;
-            lastBtn.disabled = currentIndex === totalFlipPages - 1;
+            
+            // Style tombol disabled
+            prevBtn.style.opacity = currentIndex === 0 ? "0.5" : "1";
+            nextBtn.style.opacity = currentIndex === totalFlipPages - 1 ? "0.5" : "1";
         }
 
-        function showError(msg) {
+        function showError(msg, filename) {
             loaderContainer.innerHTML = `
                 <div class="text-red-500 text-center p-6 bg-gray-900 rounded-lg border border-red-800 shadow-xl max-w-md">
-                    <h2 class="text-xl font-bold mb-3">Gagal Memuat PDF</h2>
-                    <p class="text-gray-300 mb-4 text-sm">${msg}</p>
-                    <div class="text-left text-xs text-gray-400 bg-gray-800 p-3 rounded">
-                        <p class="font-bold text-yellow-500 mb-1">Tips Troubleshooting:</p>
-                        <ul class="list-disc pl-4 space-y-1">
-                            <li>Pastikan nama file <b>merged_output.pdf</b> sudah benar.</li>
-                            <li>Pastikan file PDF berada di folder yang sama dengan index.html.</li>
-                            <li>Jika dijalankan lokal, gunakan <b>Live Server</b> (VS Code).</li>
-                        </ul>
-                    </div>
-                    <button onclick="location.reload()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">
-                        Coba Lagi
+                    <h2 class="text-xl font-bold mb-3">File Tidak Ditemukan</h2>
+                    <p class="text-gray-300 mb-2 text-sm">Gagal memuat: <b>${filename}</b></p>
+                    <p class="text-xs text-gray-500 mb-4">${msg}</p>
+                    <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">
+                        Refresh Halaman
                     </button>
                 </div>
             `;
         }
 
-        // ==========================================
-        // EVENT LISTENER TOMBOL
-        // ==========================================
+        // Event Listener Navigasi
         prevBtn.addEventListener('click', () => pageFlip && pageFlip.flipPrev());
         nextBtn.addEventListener('click', () => pageFlip && pageFlip.flipNext());
-        firstBtn.addEventListener('click', () => pageFlip && pageFlip.flip(0));
-        lastBtn.addEventListener('click', () => pageFlip && pageFlip.flip(pageFlip.getPageCount() - 1));
-
-        // Responsif saat window di-resize
+        
         window.addEventListener('resize', () => {
             if (pageFlip) pageFlip.update();
         });
