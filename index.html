@@ -4,14 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Tahunan SPI Tahun 2025</title>
+    <title>Laporan Tahunan - Flipbook Viewer</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://unpkg.com/page-flip/dist/js/page-flip.browser.js"></script>
 
     <script>
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     </script>
 
     <style>
@@ -19,280 +20,71 @@
             background-color: #1a1a1a;
             background-image: radial-gradient(#333 1px, transparent 1px);
             background-size: 20px 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0; padding: 0; overflow: hidden; height: 100vh; width: 100vw;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
         }
 
         .header-controls {
-            height: 60px; z-index: 50; position: relative;
-            background-color: rgba(17, 24, 39, 0.95); border-bottom: 1px solid #374151;
+            height: 50px;
+            z-index: 50;
+            position: relative;
+            background-color: rgba(17, 24, 39, 0.95);
+            border-bottom: 1px solid #374151;
         }
 
         .book-wrapper {
-            display: flex; justify-content: center; align-items: center;
-            height: calc(100vh - 60px); width: 100%; overflow: hidden; padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 50px);
+            overflow: hidden;
+            padding: 20px;
         }
 
-        #flipbook { height: 100%; }
-        .page-content { background-color: white; box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1); }
-        .stf__block { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5) !important; }
+        #flipbook {
+            height: 100%;
+        }
+
+        .page-content {
+            background-color: white;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stf__block {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5) !important;
+        }
 
         .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3b82f6;
-            border-radius: 50%; width: 40px; height: 40px;
-            animation: spin 1s linear infinite; margin: 0 auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .doc-btn { transition: all 0.3s ease; font-weight: 600; border: 1px solid transparent; }
-        .doc-btn.active { background-color: #3b82f6; color: white; border-color: #60a5fa; }
-        .doc-btn.inactive { background-color: #374151; color: #9ca3af; border-color: #4b5563; }
-        .doc-btn.inactive:hover { background-color: #4b5563; color: white; }
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 
 <body class="text-white">
 
+    <!-- HEADER -->
     <div class="w-full px-4 shadow-lg flex justify-between items-center header-controls">
+        <!-- <h1 class="text-lg font-bold text-blue-400 hidden sm:block">Annual Report Viewer</h1> -->
+
         <div class="flex flex-col justify-center">
-            <h1 class="text-lg font-bold text-white tracking-wide">Annual Report</h1>
-            <span class="text-xs text-blue-400" id="current-doc-label">Agenda Strategis</span>
+            <h1 class="text-lg font-bold text-white tracking-wide">Laporan Tahunan & Agenda Strategis</h1>
+            <span class="text-xs text-blue-400" id="current-doc-label">Satuan Pengawas Internal Transjakarta</span>
         </div>
-
-        <div class="text-center text-sm text-gray-400 absolute left-1/2 transform -translate-x-1/2 hidden lg:block" id="page-info">
-            Menyiapkan sistem...
-        </div>
-
-        <div class="flex items-center space-x-4">
-            <div class="flex bg-gray-800 rounded-lg p-1 space-x-1">
-                <button onclick="switchDocument('agenda')" id="btn-agenda" class="doc-btn active px-3 py-1 rounded text-xs sm:text-sm">
-                    Agenda Strategis
-                </button>
-                <button onclick="switchDocument('laporan')" id="btn-laporan" class="doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm">
-                    Laporan Eksekutif
-                </button>
-            </div>
-
-            <div class="h-6 w-px bg-gray-600 hidden sm:block"></div>
-
-            <div class="flex space-x-1">
-                <button id="prev-btn" title="Sebelumnya" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm">&larr;</button>
-                <button id="next-btn" title="Selanjutnya" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs sm:text-sm">&rarr;</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="loader-container" class="absolute inset-0 flex flex-col justify-center items-center bg-black bg-opacity-90 z-40" style="top: 60px;">
-        <div class="loader block mb-4"></div>
-        <p class="text-white font-medium" id="loading-text">Menghubungkan ke file PDF...</p>
-    </div>
-
-    <div class="book-wrapper">
-        <div id="flipbook" class="hidden"></div>
-    </div>
-
-    <script>
-        // ==========================================
-        // KONFIGURASI 
-        // ==========================================
-        const DOCUMENTS = {
-            'agenda': { url: 'agenda_strategis.pdf', name: 'Agenda Strategis' },
-            'laporan': { url: 'laporan_eksekutif.pdf', name: 'Laporan Eksekutif' }
-        };
-
-        const TARGET_WIDTH = 800; 
-        const TARGET_HEIGHT = 1132; 
-
-        // State Global
-        let pageFlip = null;
-        let pdfDoc = null;
-        let renderedPages = new Set();
-        let currentDocKey = 'agenda';
-
-        // Elemen DOM
-        const flipbookEl = document.getElementById('flipbook');
-        const loaderContainer = document.getElementById('loader-container');
-        const loadingText = document.getElementById('loading-text');
-        const pageInfo = document.getElementById('page-info');
-        const currentDocLabel = document.getElementById('current-doc-label');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-
-        window.addEventListener('DOMContentLoaded', () => {
-            switchDocument('agenda');
-        });
-
-        // ==========================================
-        // LOGIKA SWITCH DOKUMEN
-        // ==========================================
-        async function switchDocument(key) {
-            currentDocKey = key;
-            const docConfig = DOCUMENTS[key];
-
-            // Update UI Tombol
-            document.getElementById('btn-agenda').className = key === 'agenda' ? 'doc-btn active px-3 py-1 rounded text-xs sm:text-sm' : 'doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm';
-            document.getElementById('btn-laporan').className = key === 'laporan' ? 'doc-btn active px-3 py-1 rounded text-xs sm:text-sm' : 'doc-btn inactive px-3 py-1 rounded text-xs sm:text-sm';
-            currentDocLabel.innerText = docConfig.name;
-
-            // Bersihkan Flipbook Lama
-            if (pageFlip) {
-                pageFlip.destroy();
-                pageFlip = null;
-            }
-            
-            flipbookEl.innerHTML = '';
-            renderedPages.clear(); 
-            pdfDoc = null;
-
-            // Reset Loader
-            if(loaderContainer) loaderContainer.classList.remove('hidden');
-            if(flipbookEl) flipbookEl.classList.add('hidden');
-
-            // Tambahkan Timestamp agar browser tidak pakai cache lama (Anti-Cache)
-            const urlWithTimestamp = `${docConfig.url}?t=${new Date().getTime()}`;
-            
-            await loadPDF(urlWithTimestamp, docConfig.url);
-        }
-
-        // ==========================================
-        // LOAD PDF & RENDER
-        // ==========================================
-        async function loadPDF(fetchUrl, displayUrl) {
-            try {
-                if(loadingText) loadingText.innerText = `Mengunduh file...`;
-                
-                const loadingTask = pdfjsLib.getDocument(fetchUrl);
-                pdfDoc = await loadingTask.promise;
-
-                const totalPages = pdfDoc.numPages;
-                if(loadingText) loadingText.innerText = `Menyiapkan ${totalPages} halaman...`;
-
-                for (let i = 1; i <= totalPages; i++) {
-                    const canvas = document.createElement('canvas');
-                    canvas.className = 'page-content';
-                    canvas.id = `page-${i}`;
-                    canvas.width = TARGET_WIDTH;
-                    canvas.height = TARGET_HEIGHT;
-                    
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = "#ffffff";
-                    ctx.fillRect(0, 0, TARGET_WIDTH, TARGET_HEIGHT);
-                    ctx.font = "16px sans-serif";
-                    ctx.fillStyle = "#cccccc";
-                    ctx.textAlign = "center";
-                    ctx.fillText("Halaman " + i, TARGET_WIDTH/2, TARGET_HEIGHT/2);
-
-                    flipbookEl.appendChild(canvas);
-                }
-
-                initFlipbook();
-
-                if(loaderContainer) loaderContainer.classList.add('hidden');
-                if(flipbookEl) flipbookEl.classList.remove('hidden');
-
-                renderVisiblePages(0);
-
-            } catch (error) {
-                console.error("Gagal Load PDF:", error);
-                showError(error.message, displayUrl);
-            }
-        }
-
-        // Render Halaman Cerdas (Hanya yang terlihat)
-        async function renderVisiblePages(flipbookIndex) {
-            const currentPdfPage = flipbookIndex + 1;
-            const range = [currentPdfPage, currentPdfPage + 1, currentPdfPage + 2, currentPdfPage - 1, currentPdfPage - 2];
-
-            for (let pageNum of range) {
-                if (pdfDoc && pageNum >= 1 && pageNum <= pdfDoc.numPages) {
-                    renderPageToCanvas(pageNum);
-                }
-            }
-        }
-
-        async function renderPageToCanvas(pageNumber) {
-            if (renderedPages.has(pageNumber)) return;
-            renderedPages.add(pageNumber);
-
-            try {
-                const page = await pdfDoc.getPage(pageNumber);
-                const canvas = document.getElementById(`page-${pageNumber}`);
-                if (!canvas) return;
-
-                const viewportUnscaled = page.getViewport({ scale: 1.0 });
-                const scale = TARGET_WIDTH / viewportUnscaled.width;
-                const viewport = page.getViewport({ scale: scale });
-
-                const context = canvas.getContext('2d');
-                await page.render({ canvasContext: context, viewport: viewport }).promise;
-            } catch (e) {
-                // Ignore error jika canvas sudah hilang (user pindah dokumen)
-                if(document.getElementById(`page-${pageNumber}`)) {
-                    console.error(`Error render page ${pageNumber}`, e);
-                }
-                renderedPages.delete(pageNumber);
-            }
-        }
-
-        function initFlipbook() {
-            pageFlip = new St.PageFlip(document.getElementById('flipbook'), {
-                width: TARGET_WIDTH,
-                height: TARGET_HEIGHT,
-                size: "stretch",
-                minWidth: 300, maxWidth: 1000, minHeight: 400, maxHeight: 1400,
-                showCover: true,
-                mobileScrollSupport: true,
-                maxShadowOpacity: 0.5
-            });
-
-            pageFlip.loadFromHTML(document.querySelectorAll('.page-content'));
-
-            pageFlip.on('flip', (e) => {
-                const currentIndex = e.data;
-                updateUI(currentIndex);
-                renderVisiblePages(currentIndex);
-            });
-            updateUI(0);
-        }
-
-        function updateUI(currentIndex) {
-            if(!pageFlip) return;
-            const totalFlipPages = pageFlip.getPageCount();
-            if(pageInfo) pageInfo.innerText = `Halaman ${currentIndex + 1} dari ${totalFlipPages}`;
-            
-            if(prevBtn) {
-                prevBtn.disabled = currentIndex === 0;
-                prevBtn.style.opacity = currentIndex === 0 ? "0.5" : "1";
-            }
-            if(nextBtn) {
-                nextBtn.disabled = currentIndex === totalFlipPages - 1;
-                nextBtn.style.opacity = currentIndex === totalFlipPages - 1 ? "0.5" : "1";
-            }
-        }
-
-        function showError(msg, filename) {
-            if(loaderContainer) {
-                loaderContainer.innerHTML = `
-                    <div class="text-red-500 text-center p-6 bg-gray-900 rounded-lg border border-red-800 shadow-xl max-w-md">
-                        <h2 class="text-xl font-bold mb-3">File Tidak Ditemukan</h2>
-                        <p class="text-gray-300 mb-2 text-sm">Gagal memuat: <b>${filename}</b></p>
-                        <p class="text-xs text-gray-500 mb-4">${msg}</p>
-                        <div class="bg-gray-800 p-2 rounded text-left text-xs text-gray-400 mb-4">
-                            <strong>Cek Settings GitHub:</strong><br>
-                            Pastikan kolom "Custom domain" di Settings > Pages KOSONG.
-                        </div>
-                        <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition">
-                            Coba Lagi
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // Event Listener
-        if(prevBtn) prevBtn.addEventListener('click', () => pageFlip && pageFlip.flipPrev());
-        if(nextBtn) nextBtn.addEventListener('click', () => pageFlip && pageFlip.flipNext());
-        window.addEventListener('resize', () => { if (pageFlip) pageFlip.update(); });
-    </script>
-</body>
-</html>
+        
+        <div id="page-info"
+            class="text-center text-sm text-gray-400 absolute left-1/2 transform -translate-x-1/2 
