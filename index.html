@@ -67,8 +67,7 @@
         /* Loading Spinner Style */
         .loader {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #3b82f6;
-            /* Blue-500 */
+            border-top: 4px solid #3b82f6; /* Blue-500 */
             border-radius: 50%;
             width: 40px;
             height: 40px;
@@ -77,13 +76,8 @@
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -139,11 +133,11 @@
         // ==========================================
         // KONFIGURASI 
         // ==========================================
-        const PDF_FILENAME = 'merged_output.pdf';
-
+        const PDF_FILENAME = 'merged_output.pdf'; 
+        
         // Optimasi: Gunakan resolusi layar (800px lebar sudah cukup tajam untuk web)
         // Jangan gunakan 1240px (A4 Print) karena berat.
-        const TARGET_WIDTH = 800;
+        const TARGET_WIDTH = 800; 
         const TARGET_HEIGHT = 1132; // Rasio A4 (1 : 1.414)
 
         // Variabel Global
@@ -174,7 +168,7 @@
         async function loadPDF(url) {
             try {
                 loadingText.innerText = `Mengunduh ${url}...`;
-
+                
                 // Load Dokumen PDF
                 const loadingTask = pdfjsLib.getDocument(url);
                 pdfDoc = await loadingTask.promise;
@@ -190,7 +184,7 @@
                     canvas.id = `page-${i}`; // ID Unik untuk target render nanti
                     canvas.width = TARGET_WIDTH;
                     canvas.height = TARGET_HEIGHT;
-
+                    
                     // Isi placeholder putih dan teks loading
                     const ctx = canvas.getContext('2d');
                     ctx.fillStyle = "#ffffff";
@@ -198,7 +192,7 @@
                     ctx.font = "16px sans-serif";
                     ctx.fillStyle = "#cccccc";
                     ctx.textAlign = "center";
-                    ctx.fillText("Memuat Halaman " + i + "...", TARGET_WIDTH / 2, TARGET_HEIGHT / 2);
+                    ctx.fillText("Memuat Halaman " + i + "...", TARGET_WIDTH/2, TARGET_HEIGHT/2);
 
                     flipbookEl.appendChild(canvas);
                 }
@@ -224,16 +218,16 @@
         async function renderVisiblePages(flipbookIndex) {
             // Flipbook index dimulai dari 0.
             // Karena kita memasukkan halaman PDF secara urut, Index 0 = PDF Page 1.
-
+            
             const currentPdfPage = flipbookIndex + 1;
 
             // Tentukan range halaman yang mau dirender (misal: halaman aktif, dan 2 halaman sebelum/sesudahnya)
             // Ini agar saat user membalik halaman, gambarnya sudah siap.
             const range = [
-                currentPdfPage,
-                currentPdfPage + 1,
-                currentPdfPage + 2,
-                currentPdfPage - 1,
+                currentPdfPage, 
+                currentPdfPage + 1, 
+                currentPdfPage + 2, 
+                currentPdfPage - 1, 
                 currentPdfPage - 2
             ];
 
@@ -248,14 +242,14 @@
         async function renderPageToCanvas(pageNumber) {
             // CEK CACHE: Jika halaman ini sudah pernah dirender, jangan render ulang (Hemat Memori)
             if (renderedPages.has(pageNumber)) return;
-
+            
             // Tandai sedang diproses agar tidak request double
             renderedPages.add(pageNumber);
 
             try {
                 const page = await pdfDoc.getPage(pageNumber);
                 const canvas = document.getElementById(`page-${pageNumber}`);
-
+                
                 if (!canvas) return;
 
                 // Hitung skala agar pas dengan ukuran target
@@ -264,7 +258,7 @@
                 const viewport = page.getViewport({ scale: scale });
 
                 const context = canvas.getContext('2d');
-
+                
                 // Render PDF ke Canvas
                 await page.render({
                     canvasContext: context,
@@ -298,7 +292,7 @@
             pageFlip.on('flip', (e) => {
                 const currentIndex = e.data; // Index halaman baru
                 updateUI(currentIndex);
-
+                
                 // PENTING: Trigger render untuk halaman yang baru dibuka
                 renderVisiblePages(currentIndex);
             });
@@ -309,7 +303,7 @@
 
         function updateUI(currentIndex) {
             const totalFlipPages = pageFlip.getPageCount();
-
+            
             // +1 karena index mulai dari 0
             pageInfo.innerText = `Halaman ${currentIndex + 1} dari ${totalFlipPages}`;
 
@@ -355,5 +349,4 @@
 
     </script>
 </body>
-
 </html>
